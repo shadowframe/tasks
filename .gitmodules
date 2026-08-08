@@ -1,0 +1,4 @@
+[submodule "TaskLite"]
+	path = TaskLite
+	url = https://github.com/shadowframe/TaskLite-hermes.git
+	branch = main

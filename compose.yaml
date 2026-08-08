@@ -1,0 +1,90 @@
+services:
+  tasklite:
+    image: ${TASKLITE_IMAGE}
+    container_name: tasklite
+    restart: unless-stopped
+    command: server
+    volumes:
+      - ./data:/root/.local/share/tasklite
+      - ${TASKLITE_CONFIG_FILE}:/root/.config/tasklite/config.yaml:ro
+    ports:
+      - "127.0.0.1:${TASKLITE_API_PORT}:7458"
+    healthcheck:
+      test: ["CMD-SHELL", "tasklite version >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  tasklite-attachments:
+    build:
+      context: ./attachment-service
+      dockerfile: Dockerfile
+    container_name: tasklite-attachments
+    restart: unless-stopped
+    depends_on:
+      tasklite:
+        condition: service_healthy
+    environment:
+      TASKLITE_GRAPHQL_URL: http://tasklite:7458/graphql
+      ATTACHMENTS_ROOT: /srv/attachments
+      MAX_UPLOAD_SIZE: "52428800"
+    volumes:
+      - ./attachments:/srv/attachments
+    ports:
+      - "127.0.0.1:3003:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/health >/dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  tasklite-webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile.webapp
+      args:
+        TASKLITE_REF: ${TASKLITE_REF}
+        TASKLITE_GRAPHQL_URL: ${TASKLITE_GRAPHQL_URL}
+    container_name: tasklite-webapp
+    restart: unless-stopped
+    depends_on:
+      - tasklite
+      - tasklite-attachments
+    volumes:
+      - ${TASKLITE_CONFIG_FILE}:/root/.config/tasklite/config.yaml:ro
+    ports:
+      - "127.0.0.1:${TASKLITE_WEB_PORT}:3000"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -fsS http://127.0.0.1:3000 >/dev/null
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  tasklite-exporter:
+    build:
+      context: ./tasklite-exporter
+      dockerfile: Dockerfile
+    container_name: tasklite-exporter
+    restart: unless-stopped
+    depends_on:
+      tasklite:
+        condition: service_healthy
+        required: true
+    environment:
+      TASKLITE_EXPORTER_PORT: "9460"
+      TASKLITE_GRAPHQL_URL: http://tasklite:7458/graphql
+      TASKLITE_TAG_ALLOWLIST: homelab,hermes,arbeit,einkauf,kaufen,ideen
+    expose:
+      - "9460"
+    networks:
+      - default
+      - monitoring_default
+
+networks:
+  monitoring_default:
+    external: true

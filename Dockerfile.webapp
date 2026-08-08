@@ -1,0 +1,35 @@
+FROM node:20-bookworm-slim
+
+ARG TASKLITE_REF
+ARG TASKLITE_GRAPHQL_URL
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git make curl ca-certificates python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt
+COPY TaskLite /opt/TaskLite
+RUN test -n "$TASKLITE_REF" \
+    && git -C /opt/TaskLite checkout --detach "$TASKLITE_REF"
+WORKDIR /opt/TaskLite/tasklite-webapp
+RUN python3 - <<'PY'
+from pathlib import Path
+import json
+pkg = Path('package.json')
+data = json.loads(pkg.read_text())
+data['proxy'] = 'http://tasklite:7458'
+pkg.write_text(json.dumps(data, indent=2) + '\n')
+main = Path('src/Main.elm')
+text = main.read_text()
+old = 'graphqlApiUrl : String\ngraphqlApiUrl =\n  "http://localhost:7458/graphql"'
+new = 'graphqlApiUrl : String\ngraphqlApiUrl =\n  "' + __import__('os').environ.get('TASKLITE_GRAPHQL_URL', '') + '"'
+if not __import__('os').environ.get('TASKLITE_GRAPHQL_URL'):
+    raise SystemExit('TASKLITE_GRAPHQL_URL build argument is required')
+if old not in text:
+    raise SystemExit('graphqlApiUrl pattern not found')
+main.write_text(text.replace(old, new))
+PY
+RUN npm ci
+
+EXPOSE 3000
+CMD ["sh", "-lc", "node scripts/generate-runtime-config.js && NODE_OPTIONS=--openssl-legacy-provider npx elm-app start --no-debug --no-browser"]
