@@ -80,7 +80,7 @@ Die Taskliste soll schnell und unkompliziert bleiben. Neue Aufgaben müssen nich
 Tags oder Kategorien können später als einfache Ordnungsebene verwendet werden:
 
 ```text
-einkauf
+kaufen
 idee
 homelab
 hermes
@@ -91,7 +91,7 @@ warten
 
 Darauf könnten später Workflows aufbauen, zum Beispiel:
 
-- Aufgaben mit `einkauf` als Einkaufsliste anzeigen
+- Aufgaben mit `kaufen` als Einkaufsliste anzeigen
 - `homelab`-Aufgaben nach Dienst oder Gerät gruppieren
 - `warten`-Aufgaben regelmäßig prüfen
 - `wartung`-Aufgaben wiederkehrend anzeigen

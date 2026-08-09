@@ -15,7 +15,7 @@ ALLOWLIST = [
     tag.strip().lower()
     for tag in os.environ.get(
         "TASKLITE_TAG_ALLOWLIST",
-        "homelab,hermes,arbeit,einkauf,kaufen,ideen",
+        "homelab,hermes,arbeit,kaufen,ideen",
     ).split(",")
     if tag.strip()
 ]

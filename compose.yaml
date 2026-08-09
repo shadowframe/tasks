@@ -81,7 +81,7 @@ services:
     environment:
       TASKLITE_EXPORTER_PORT: "9460"
       TASKLITE_GRAPHQL_URL: http://tasklite:7458/graphql
-      TASKLITE_TAG_ALLOWLIST: homelab,hermes,arbeit,einkauf,kaufen,ideen
+      TASKLITE_TAG_ALLOWLIST: homelab,hermes,arbeit,kaufen,ideen
     expose:
       - "9460"
     networks:
