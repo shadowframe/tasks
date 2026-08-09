@@ -1,5 +1,8 @@
 services:
   tasklite:
+    build:
+      context: ./TaskLite
+      dockerfile: Dockerfile
     image: ${TASKLITE_IMAGE}
     container_name: tasklite
     restart: unless-stopped
