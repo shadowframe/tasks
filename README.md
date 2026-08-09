@@ -185,6 +185,35 @@ Weitere Informationen:
 
 Der Task-Stack verwendet TaskLite, bleibt aber als Gesamtprojekt eigenständig.
 
+## Optionales persönliches Bootstrap
+
+Eine frische Installation enthält keine persönliche Grundstruktur. Wer die im Repository beschriebene Struktur übernehmen möchte, kann das Setup bewusst und einmalig über das Bootstrap-Skript ausführen:
+
+```bash
+./scripts/bootstrap-personal.sh --dry-run
+./scripts/bootstrap-personal.sh
+```
+
+Das Skript:
+
+- legt die optionale TaskLite-Konfiguration an
+- richtet die vorgesehenen Shortcuts und Tags ein
+- verwendet die lokale Attachment-Service-Adresse aus `versions.env`
+- legt keine Tasks an
+- verändert keine SQLite-Datenbank
+- löscht keine Daten
+- überschreibt keine abweichende bestehende Konfiguration
+
+Das Skript liest bei vorhandenen Dateien die Werte aus `.env` und `versions.env`. Die lokale Attachment-Adresse muss in `versions.env` unter `TASKLITE_ATTACHMENTS_PUBLIC_BASE` gesetzt sein.
+
+Vor der Ausführung kann der Inhalt geprüft werden:
+
+```bash
+less scripts/bootstrap-personal.sh
+```
+
+Das Bootstrap-Skript ist kein dauerhaft installierter Befehl und wird nicht automatisch durch Docker Compose ausgeführt. Es dient nur dazu, eine neue Installation bewusst mit einer gewünschten Grundstruktur zu versehen.
+
 ## Öffentliche Repository-Grenze
 
 Das öffentliche Repository enthält nur Quellcode, Docker-Konfiguration, Vorlagen und Dokumentation.
