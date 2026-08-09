@@ -14,7 +14,7 @@ versions.env
 
 # Host and editor metadata
 .DS_Store
-._.DS_Store
+._*
 .vscode/
 .idea/
 

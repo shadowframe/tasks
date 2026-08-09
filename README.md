@@ -1,5 +1,9 @@
 # Task-Stack
 
+<p align="center">
+  <img src="logo.jpg" alt="Task-Stack Übersicht" width="600">
+</p>
+
 Ein einfacher, selbst gehosteter Task-Stack für persönliche Aufgaben, Anhänge und spätere Workflows.
 
 Repository:
