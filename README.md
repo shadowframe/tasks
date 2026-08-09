@@ -1,84 +1,236 @@
-# TaskLite Stack
+# Task-Stack
 
-A self-hosted TaskLite deployment with:
+Ein einfacher, selbst gehosteter Task-Stack für persönliche Aufgaben, Anhänge und spätere Workflows.
 
-- TaskLite API and SQLite persistence
-- a webapp built from a pinned public TaskLite downstream commit
-- a small attachment service
-- a Prometheus exporter
+Repository:
 
-This repository is a deployment/customization project around [TaskLite](https://github.com/ad-si/TaskLite), not a replacement for the upstream project. The upstream source and license remain preserved in `TaskLite/` when that checkout is included.
+https://github.com/shadowframe/tasks
 
-## Public-repository boundary
+## Grundidee
 
-The repository contains source code, Dockerfiles, Compose configuration, and safe configuration templates. It must not contain:
+Der Task-Stack bildet eine kleine, stabile Aufgabenbasis. Er speichert Aufgaben, Zustände, optionale Tags, Zeitbezüge und Verweise auf Anhänge.
 
-- `.env` or `versions.env`
-- production databases or uploaded files
-- private hostnames, Tailscale URLs, passwords, tokens, or signed URLs
-- host-specific configuration files
+Hermes kann darauf aufsetzen und Aufgaben erfassen, suchen, zusammenfassen oder mit zusätzlichen Informationen anreichern. Hermes ist aber nicht Teil der eigentlichen Datenhaltung und soll unabhängig vom Task-Stack funktionieren.
 
-Runtime state stays outside version control:
+Die Grundaufteilung:
 
 ```text
-data/
-attachments/
-.env
-versions.env
+Task-Stack
+├── TaskLite als einfaches Task-Backend
+├── Attachment-Service
+├── optionale Hermes-Integration
+└── Prometheus-Metriken
 ```
 
-Copy the templates before starting:
+TaskLite ist dabei nur eine Komponente des Task-Stacks und nicht dessen übergeordneter Name.
+
+## Einfache Aufgabenverwaltung
+
+Der Schwerpunkt liegt auf einer persönlichen Taskliste für:
+
+- Einkäufe
+- allgemeine Ideen
+- Homelab-Aufgaben
+- Recherche
+- Wartung und Reparaturen
+
+Eine Aufgabe braucht zunächst nur:
+
+- Beschreibung
+- Zustand
+- Erstellungsdatum
+- optional Notizen
+- optional Tags
+- optional Zeitbezug
+- optional Anhänge
+
+Bewusst nicht vorgesehen sind zunächst:
+
+- Prioritätsstufen
+- komplizierte Projektstrukturen
+- Bewertungspunkte
+- verpflichtende Kategorien
+- automatische Massenänderungen
+
+Die Taskliste soll schnell und unkompliziert bleiben. Neue Aufgaben müssen nicht zuerst vollständig klassifiziert werden.
+
+## Tags und spätere Workflows
+
+Tags oder Kategorien können später als einfache Ordnungsebene verwendet werden:
+
+```text
+einkauf
+idee
+homelab
+hermes
+recherche
+wartung
+warten
+```
+
+Darauf könnten später Workflows aufbauen, zum Beispiel:
+
+- Aufgaben mit `einkauf` als Einkaufsliste anzeigen
+- `homelab`-Aufgaben nach Dienst oder Gerät gruppieren
+- `warten`-Aufgaben regelmäßig prüfen
+- `wartung`-Aufgaben wiederkehrend anzeigen
+- `recherche`-Aufgaben in einer passenden Ansicht anzeigen
+
+Tags sollen zunächst keine starre Hierarchie erzwingen.
+
+## Zeitbezogene Aufgaben
+
+Die Aufgabenverwaltung kann später um Zeitinformationen erweitert werden:
+
+- Fälligkeitszeitpunkt
+- Startzeitpunkt
+- Abschlusszeitpunkt
+- geschätzte Dauer
+- tatsächliche Laufzeit
+- Wiederholung
+- nächster Prüftermin
+
+Damit lassen sich einfache zeitabhängige Aufgaben abbilden, ohne den Task-Stack sofort zu einem vollständigen Kalender- oder Zeiterfassungssystem zu machen.
+
+## Unabhängige Anhänge
+
+Anhänge werden unabhängig von der Task-Datenbank gespeichert und verwaltet.
+
+Mögliche Dateitypen:
+
+```text
+PDF, PNG, JPG, JSON, SQL, DOCX, TXT
+```
+
+Der Task-Stack speichert nur die Verweise und Metadaten. Die Dateien liegen separat im Attachment-Service:
+
+```text
+attachments/
+└── <task-id>/
+    ├── <attachment-id>--rechnung.pdf
+    └── <attachment-id>--screenshot.png
+```
+
+Zu den Metadaten gehören beispielsweise:
+
+- Dateiname
+- MIME-Type
+- Größe
+- Hash
+- Erstellungszeitpunkt
+- zugehörige Task-ID
+
+Größere Dokumente können außerhalb des Task-Stacks abgelegt und aus einer Aufgabe heraus verlinkt werden.
+
+## Hermes-Integration
+
+Hermes soll den Task-Stack über eine API verwenden und nicht direkt auf die TaskLite-Datenbank zugreifen.
+
+Mögliche Funktionen:
+
+- Aufgaben anlegen und suchen
+- Aufgaben nach Tags oder Zuständen filtern
+- Aufgaben zusammenfassen
+- Anhänge auflisten und verknüpfen
+- zeitbezogene Aufgaben für Auswertungen vorbereiten
+- Vorschläge für Tags oder externe Links machen
+
+Der Task-Stack muss aber ohne Hermes funktionieren. Ein Ausfall von Hermes darf die Aufgabenverwaltung nicht stoppen.
+
+## Unabhängigkeit von Daemons
+
+Benutzer- und System-Daemons dürfen nicht vom Task-Stack abhängig sein.
+
+Das bedeutet:
+
+- Integrierte Anwendungen müssen ohne Task-Stack starten können.
+- Daemons dürfen den Task-Stack optional nutzen.
+- Ein Ausfall von TaskLite oder dem Attachment-Service darf keine anderen Dienste stoppen.
+- Prometheus und Grafana dürfen ausfallen, ohne die Taskverwaltung zu beeinträchtigen.
+
+Der Task-Stack ist eine optionale Infrastrukturkomponente, kein zentraler Systembus.
+
+## Metriken und mögliche Steuerung
+
+Der Task-Stack kann Metriken für Prometheus bereitstellen:
+
+- offene Aufgaben
+- erledigte Aufgaben
+- überfällige Aufgaben
+- Aufgaben nach Tag
+- Aufgaben mit Fälligkeit heute
+- Attachment-Anzahl und Speichergröße
+- Erreichbarkeit der Dienste
+
+Metriken sind zunächst lesend.
+
+Ob Hermes oder Daemons später auch Aufgaben über diese Infrastruktur verändern dürfen, ist noch offen. Für direkte Steuerung müssten vorher Berechtigungen, Bestätigungen, Fehlerbehandlung und Schutz vor Massenänderungen definiert werden.
+
+## TaskLite im Task-Stack
+
+TaskLite ist das aktuelle Task-Backend des Task-Stacks. Es stellt die API, die Task-Datenbank und die grundlegenden Task-Funktionen bereit.
+
+Die Webapp wird aus dem öffentlichen Downstream-Fork gebaut und über einen festen Commit referenziert. Änderungen am TaskLite-Code werden daher separat vom übrigen Task-Stack behandelt.
+
+Weitere Informationen:
+
+- Originalprojekt: https://github.com/ad-si/TaskLite
+- öffentlicher Downstream-Fork: https://github.com/shadowframe/TaskLite-hermes
+- Dokumentation des integrierten Forks: https://github.com/shadowframe/TaskLite-hermes#readme
+- lokale TaskLite-Konfiguration: `~/.config/tasklite/config.yaml`
+
+Der Task-Stack verwendet TaskLite, bleibt aber als Gesamtprojekt eigenständig.
+
+## Öffentliche Repository-Grenze
+
+Das öffentliche Repository enthält nur Quellcode, Docker-Konfiguration, Vorlagen und Dokumentation.
+
+Nicht veröffentlicht werden:
+
+```text
+.env
+versions.env
+data/
+attachments/
+*.db
+private Hostnamen
+Tailscale-Adressen
+Passwörter
+Tokens
+private Schlüssel
+```
+
+Die produktiven Werte bleiben auf dem jeweiligen Host. Das öffentliche Repository enthält nur sichere Vorlagen wie:
+
+```text
+.env.example
+versions.env.example
+```
+
+## Start
 
 ```bash
 cp .env.example .env
 cp versions.env.example versions.env
-```
-
-Then set deployment-specific values in those local files. `docker compose` reads `.env` automatically; `versions.env` is optional metadata and is not committed.
-
-## Configuration
-
-Important `.env` values:
-
-- `TASKLITE_IMAGE` – TaskLite container image
-- `TASKLITE_API_PORT` – local API bind port
-- `TASKLITE_WEB_PORT` – local webapp bind port
-- `TASKLITE_REF` – pinned public TaskLite commit used for the webapp build
-- `TASKLITE_GRAPHQL_URL` – browser-reachable GraphQL URL
-- `TASKLITE_CONFIG_FILE` – host path to the local TaskLite YAML configuration
-
-The TaskLite YAML configuration may contain deployment-specific values such as the attachment-service URL. Keep it outside the repository, for example under `~/.config/tasklite/config.yaml`.
-
-## Start and verify
-
-```bash
 docker compose up -d
 docker compose ps
-docker compose logs -f
 ```
 
-Local endpoints depend on `.env`; the usual defaults are:
+Die produktiven Daten bleiben lokal:
 
-- API: `http://127.0.0.1:7458`
-- Webapp: `http://127.0.0.1:3002`
-- Attachment health: `http://127.0.0.1:3003/health`
-- Exporter: internal Docker network, port `9460`
+```text
+data/
+attachments/
+```
 
-## Attachments
+## Grundsätze
 
-Attachments are stored below `attachments/<task-ulid>/` and referenced from TaskLite metadata. The directory contains user data and must remain local.
-
-The attachment service currently provides upload, listing, download, and deletion endpoints. It is intended for a trusted self-hosted deployment and should be placed behind the deployment's authentication and network controls before exposing it outside the private network.
-
-## Updating TaskLite
-
-The webapp build uses the public downstream checkout in `TaskLite/` and a pinned `TASKLITE_REF`. Update the downstream checkout deliberately, test the stack, then update the local ref value. Do not commit a production hostname into `Dockerfile.webapp` or the Compose file.
-
-The original project is available at:
-
-- Repository: https://github.com/ad-si/TaskLite
-- Downstream fork: https://github.com/shadowframe/TaskLite-hermes
-
-## License and attribution
-
-TaskLite remains subject to its upstream license and copyright notices. Any public release of this deployment repository should preserve those notices and add an explicit license for newly authored stack components before publication.
+- Die Taskliste bleibt klein und praktisch.
+- Prioritäten sind zunächst nicht erforderlich.
+- Tags und Kategorien bleiben optional.
+- Anhänge werden unabhängig verwaltet.
+- Zeitbezüge können später ergänzt werden.
+- Hermes bleibt eine optionale intelligente Schicht.
+- Daemons dürfen den Task-Stack nicht voraussetzen.
+- Metriken sind zunächst lesend.
+- Komplexität kommt erst hinzu, wenn ein konkreter Bedarf entsteht.
