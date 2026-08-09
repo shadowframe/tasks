@@ -2,9 +2,6 @@
 .env
 .env.*
 !.env.example
-versions.env
-!versions.env.example
-
 # Production state and uploaded files
 /data/
 /attachments/

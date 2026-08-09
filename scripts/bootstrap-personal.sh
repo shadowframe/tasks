@@ -18,8 +18,8 @@ The script is safe to run repeatedly:
 - it does not delete data
 - it refuses to overwrite a different existing config file
 
-Configuration is read from .env and versions.env in the repository when those
-files exist. Environment variables take precedence.
+Configuration is read from .env in the repository when it exists.
+Environment variables take precedence.
 EOF
 }
 
@@ -67,14 +67,13 @@ while [ "$#" -gt 0 ]; do
 done
 
 load_local_values "$ROOT_DIR/.env"
-load_local_values "$ROOT_DIR/versions.env"
 
 CONFIG_FILE=${CONFIG_FILE:-${TASKLITE_CONFIG_FILE:-"$HOME/.config/tasklite/config.yaml"}}
 
 case "$ATTACHMENTS_WEB_URL" in
     ''|*[!A-Za-z0-9:/._?=-]*)
         printf '%s\n' 'Missing or invalid TASKLITE_ATTACHMENTS_PUBLIC_BASE.' >&2
-        printf '%s\n' 'Set it in versions.env or export it before running this script.' >&2
+        printf '%s\n' 'Set it in .env or export it before running this script.' >&2
         exit 1
         ;;
 esac

@@ -190,7 +190,7 @@ Ob Hermes oder Daemons später auch Aufgaben über diese Infrastruktur veränder
 
 TaskLite ist das aktuelle Task-Backend des Task-Stacks. Es stellt die API, die Task-Datenbank und die grundlegenden Task-Funktionen bereit.
 
-Die Webapp wird aus dem öffentlichen Downstream-Fork gebaut und über einen festen Commit referenziert. Änderungen am TaskLite-Code werden daher separat vom übrigen Task-Stack behandelt.
+Die Webapp wird aus dem lokalen Checkout des öffentlichen Downstream-Forks gebaut. `TASKLITE_REF` bleibt in `.env` die maßgebliche Compose-Variable; aktuell bleibt der Wert bewusst `main`. Änderungen am TaskLite-Code werden separat vom übrigen Task-Stack behandelt.
 
 Weitere Informationen:
 
@@ -214,13 +214,13 @@ Das Skript:
 
 - legt die optionale TaskLite-Konfiguration an
 - richtet die vorgesehenen Shortcuts und Tags ein
-- verwendet die lokale Attachment-Service-Adresse aus `versions.env`
+- verwendet die lokale Attachment-Service-Adresse aus `.env`
 - legt keine Tasks an
 - verändert keine SQLite-Datenbank
 - löscht keine Daten
 - überschreibt keine abweichende bestehende Konfiguration
 
-Das Skript liest bei vorhandenen Dateien die Werte aus `.env` und `versions.env`. Die lokale Attachment-Adresse muss in `versions.env` unter `TASKLITE_ATTACHMENTS_PUBLIC_BASE` gesetzt sein.
+Das Skript liest die lokale Konfiguration aus `.env`. Die Attachment-Adresse muss dort unter `TASKLITE_ATTACHMENTS_PUBLIC_BASE` gesetzt sein. Bereits exportierte Umgebungsvariablen haben Vorrang.
 
 Vor der Ausführung kann der Inhalt geprüft werden:
 
@@ -238,7 +238,6 @@ Nicht veröffentlicht werden:
 
 ```text
 .env
-versions.env
 data/
 attachments/
 *.db
@@ -249,18 +248,16 @@ Tokens
 private Schlüssel
 ```
 
-Die produktiven Werte bleiben auf dem jeweiligen Host. Das öffentliche Repository enthält nur sichere Vorlagen wie:
+Die produktiven Werte bleiben auf dem jeweiligen Host. Das öffentliche Repository enthält nur die sichere Vorlage:
 
 ```text
 .env.example
-versions.env.example
 ```
 
 ## Start
 
 ```bash
 cp .env.example .env
-cp versions.env.example versions.env
 docker compose up -d
 docker compose ps
 ```
