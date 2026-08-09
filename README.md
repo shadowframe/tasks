@@ -58,6 +58,22 @@ Bewusst nicht vorgesehen sind zunächst:
 
 Die Taskliste soll schnell und unkompliziert bleiben. Neue Aufgaben müssen nicht zuerst vollständig klassifiziert werden.
 
+## 🗺️ Roadmap
+
+| Status | Feature |
+|:------:|---------|
+| ✅ | TaskLite-Backend |
+| 🚧 | Attachment-Service |
+| ⏳ | Task-Metadaten |
+| ⏳ | Tags & Workflows |
+| ⏳ | Zeitbezogene Aufgaben |
+| ⏳ | Hermes-Integration |
+| ⏳ | Prometheus-Metriken |
+| ⏳ | Workflow-Automatisierung |
+| ⏳ | Berechtigungen & Agent-Aktionen |
+
+**Legende:** ✅ Fertig · 🚧 Work in Progress · ⏳ Geplant
+
 ## Tags und spätere Workflows
 
 Tags oder Kategorien können später als einfache Ordnungsebene verwendet werden:
